@@ -14,9 +14,10 @@ matched layer absorbing boundary condtion. The theory is fully described in
 the accompanying paper:
 
 Maeda, T., H. Tsushima, and T. Furumura,
-paper-title,
-journal,
-doi:
+An effective absorbing boundary condition for linear long-wave and linear
+dispersive wave tsunami simulations,
+Earth, Planets, and Space,
+submitted. 
 
 The author request that the user to cite the above acompanying paper in any
 publications that result from the use of this software, although this is
