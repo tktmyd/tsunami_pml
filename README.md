@@ -10,16 +10,16 @@ Corresponding Author: Takuto Maeda (maeda (at) eri.u-tokyo.ac.jp)
 
 This software simulates tsunami wave propagation under the linear long wave
 (LLW) and the liner dispersive wave (LDW) approximation with the perfectly
-matched layer absorbing boundary condtion. The theory is fully described in
-the accompanying paper:
+matched layer absorbing boundary condition. The theory and example are
+described in the accompanying paper:
 
 Maeda, T., H. Tsushima, and T. Furumura,
 An effective absorbing boundary condition for linear long-wave and linear
 dispersive wave tsunami simulations,
 Earth, Planets, and Space,
-submitted. 
+in press, 2016.
 
-The author request that the user to cite the above acompanying paper in any
+The authors request that the user to cite the above accompanying paper in any
 publications that result from the use of this software, although this is
 not an obligation.
 
@@ -31,7 +31,7 @@ MIT
 
 ## Languages and Requirements
 
-Fortran 2008
+Fortran2008
 
 The author confirms it successfully work at the following compilers:
 gfortran 5.1.0 (Mac OSX)
@@ -47,7 +47,7 @@ They include the following three block files when they are compiled:
  * blk_param.f90: parameter for model size, grid width and the title for output
  * blk_initheight.f90: define the initial sea height
  * blk_bathymetry.f90: define the bathymetry
- * blk_station.f90: defnine number of station and station locations
+ * blk_station.f90: define the station information for output
 
 After modification of these files, compile llw.f90 and/or ldw.f90.
 Block files (blk_*.f90) are automatically included into the main program files.

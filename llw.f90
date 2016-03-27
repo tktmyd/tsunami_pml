@@ -1,6 +1,6 @@
 !! ------------------------------------------------------------------------- !!
 !>
-!! An example code of an implementation of the absorbing boundary condition 
+!! An example code of an implementation of the absorbing boundary condition
 !! for tsunami wave propagation: Liner Long Wave (LLW) case
 !!
 !! @license
@@ -12,20 +12,20 @@
 !!
 !!   Maeda, T., H. Tsushima, and T. Furumura,
 !!   An effective absorbing boundary condition for linear long-wave and
-!!   linear dispersive wave tsunami simulations, 
-!!   in preparation. 
+!!   linear dispersive wave tsunami simulations,
+!!   in press, 2016. 
 !!
 !<
 !! ------------------------------------------------------------------------- !!
 program llw
- 
+
   implicit none
 
   !! fixed parameters
   integer, parameter :: STDERR  = 0            !< Standard Error
   integer, parameter :: STDOUT  = 6            !< Standard Output
   real,    parameter :: PI      = atan(1.0)*4
-  real,    parameter :: g0      = 9.80665      !< gravity 
+  real,    parameter :: g0      = 9.80665      !< gravity
   integer, parameter :: na=20                  !< absorber thickness
 
   !! control parameters
@@ -62,7 +62,7 @@ program llw
 
   !! parameter input
   include "blk_param.f90"
-  
+
   !! ----------------------------------------------------------------------- !!
   !>
   !! memory allocation
@@ -98,13 +98,13 @@ program llw
 
   end block
 
-  
+
   include 'blk_initheight.f90'
-  
+
   include 'blk_bathymetry.f90'
-  
+
   include 'blk_station.f90'
-  
+
   !! ----------------------------------------------------------------------- !!
   !>
   !! PML absorber settings
@@ -121,7 +121,7 @@ program llw
     integer, parameter :: pb = 2
     real,    parameter :: c0 = 500.0 !! assumed phase speed
     !! --
-    
+
 
     !! damping profile constants
     hx = na * dx
@@ -179,7 +179,7 @@ program llw
     end do
 
   end block
-  
+
 
   !! ----------------------------------------------------------------------- !!
   !>
@@ -201,7 +201,7 @@ program llw
     end do
 
   end block
-  
+
 
   !! ----------------------------------------------------------------------- !!
   !>
@@ -231,7 +231,7 @@ program llw
 
 
   end block
-  
+
 
   !! ----------------------------------------------------------------------- !!
   !>
@@ -252,9 +252,9 @@ program llw
           if( hh(i,j) < 0.0 ) fh(i,j) = 0.0
        end do
     end do
-    
+
   end block
-  
+
 
   !! ----------------------------------------------------------------------- !!
   !>
@@ -270,20 +270,20 @@ program llw
 
   end block
 
-  
+
 
   !! ----------------------------------------------------------------------- !!
   !>
   !! time stepping
   !<
   block
-    
+
     integer :: it
     real :: dxeta(nx,ny), dyeta(nx,ny)
     real :: dxm(nx,ny), dyn(nx,ny)
     !! --
-    
-    do it= 1, nt  
+
+    do it= 1, nt
 
        if( mod(it,100) == 0 ) then
           write(STDERR,'(A,I4.4,A,I4.4)') trim(title) // &
@@ -296,51 +296,51 @@ program llw
        !<
        !! --
        block
-         
+
          integer :: i, j
          !! --
-         
+
          do j=1, ny
             do i=2, nx
                dxeta(i,j) = ( eta(i,j) - eta(i-1,j) ) * dxi
             end do
             dxeta(1,j) = ( eta(1,j) -        0.0 ) * dxi
          end do
-         
+
          do i=1, nx
             do j=2, ny
                dyeta(i,j) = ( eta(i,j) - eta(i,j-1) ) * dyi
             end do
             dyeta(i,1) = ( eta(i,1) -        0.0 ) * dyi
          end do
-         
+
        end block
-       
-       
+
+
        !! ------------------------------------------------------------------ !!
        !>
        !! update velocity in the interior domain
        !<
-       !!-- 
+       !!--
        update_vel: block
-         
+
          integer :: i, j
          real    :: dtxi, dtyi
          !! --
-         
+
          dtxi = dt * dxi
          dtyi = dt * dyi
-         
+
          do j=na+1, ny-na
             do i=na+1, nx-na
                mm(i,j) = mm(i,j) - g0*hm(i,j)*dxeta(i,j)*dt*fm(i,j)
                nn(i,j) = nn(i,j) - g0*hn(i,j)*dyeta(i,j)*dt*fn(i,j)
             end do
          end do
-         
+
        end block update_vel
 
-       
+
 
        !! ------------------------------------------------------------------ !!
        !>
@@ -351,7 +351,7 @@ program llw
 
          integer :: i, j
          !! --
-         
+
          !! South
          do j=1, na
             do i=1, nx
@@ -371,7 +371,7 @@ program llw
                        - g2y(1,j) * g0 * hn(i,j) * dyeta(i,j) * dt * fn(i,j)
             end do
          end do
-         
+
          !! West
          do j=na+1, ny-na
             do i=1, na
@@ -381,7 +381,7 @@ program llw
                        - g2y(1,j) * g0 * hn(i,j) * dyeta(i,j) * dt * fn(i,j)
             end do
          end do
-         
+
          !! East
          do j=na+1, ny-na
             do i=nx-na+1,nx
@@ -391,9 +391,9 @@ program llw
                        - g2y(1,j) * g0 * hn(i,j) * dyeta(i,j) * dt * fn(i,j)
             end do
          end do
-         
+
        end block
-       
+
 
 
        !! ------------------------------------------------------------------ !!
@@ -402,128 +402,128 @@ program llw
        !<
        !! --
        block
-         
+
          integer :: i, j
          !! --
-         
+
          do j=1, ny
             dxm(nx,j) = ( 0.0 - mm(nx,j)  ) * dxi
             do i=1, nx-1
                dxm(i,j) = ( mm(i+1,j) - mm(i,j) ) * dxi
             end do
          end do
-         
+
          do i=1, nx
             dyn(i,ny) = ( 0.0 - nn(i,ny) ) * dyi
             do j=1, ny-1
                dyn(i,j) = ( nn(i,j+1) - nn(i,j) ) * dyi
             end do
          end do
-         
+
        end block
 
-       
+
 
        !! ------------------------------------------------------------------ !!
        block
-         
+
          integer i, j
          real :: dtxi, dtyi
          !! --
-         
+
          dtxi = dt * dxi
          dtyi = dt * dyi
-         
+
          do j=na+1, ny-na
             do i=na+1, nx-na
                eta(i,j) =  eta(i,j) - ( dxm(i,j) +  dyn(i,j) )*dt * fh(i,j)
             end do
          end do
-         
+
        end block
 
-       
-       
+
+
        !! ------------------------------------------------------------------ !!
        block
-         
+
          integer :: i, j
          real :: eta_y
          !! --
-         
+
          do j=1, na
             do i=1, nx
                eta_y = eta(i,j) - eta_x(i,j)
-               
+
                eta_x(i,j) = g1x(2,i) * eta_x(i,j) - g2x(2,i) * dxm(i,j) * dt
                eta_y      = g1y(2,j) * eta_y      - g2y(2,j) * dyn(i,j) * dt
-               
+
                eta(i,j) = ( eta_x(i,j) + eta_y ) * fh(i,j)
-               
+
             end do
          end do
-         
+
          do j=ny-na+1,ny
             do i=1, nx
                eta_y = eta(i,j) - eta_x(i,j)
-               
+
                eta_x(i,j) = g1x(2,i) * eta_x(i,j) - g2x(2,i) * dxm(i,j) * dt
                eta_y      = g1y(2,j) * eta_y      - g2y(2,j) * dyn(i,j) * dt
-               
+
                eta(i,j) = ( eta_x(i,j) + eta_y ) * fh(i,j)
             end do
          end do
-         
+
          do j=na+1, ny-na
             do i=1, na
                eta_y = eta(i,j) - eta_x(i,j)
-               
+
                eta_x(i,j) = g1x(2,i) * eta_x(i,j) - g2x(2,i) * dxm(i,j) * dt
                eta_y      = g1y(2,j) * eta_y      - g2y(2,j) * dyn(i,j) * dt
-               
+
                eta(i,j) = ( eta_x(i,j) + eta_y ) * fh(i,j)
             end do
          end do
-         
+
          do j=na+1, ny-na
             do i=nx-na+1,nx
                eta_y = eta(i,j) - eta_x(i,j)
-               
+
                eta_x(i,j) = g1x(2,i) * eta_x(i,j) - g2x(2,i) * dxm(i,j) * dt
                eta_y      = g1y(2,j) * eta_y      - g2y(2,j) * dyn(i,j) * dt
-               
+
                eta(i,j) = ( eta_x(i,j) + eta_y ) * fh(i,j)
             end do
          end do
-         
+
        end block
-       
-       
+
+
        !! ------------------------------------------------------------------ !!
        block
-         
+
          integer :: i
-         
+
          do i=1, nst
             wav(i,it) = eta( ist(i), jst(i) )
          end do
-         
+
        end block
 
-       
+
 
     end do
-    
+
   end block
 
   !! ----------------------------------------------------------------------- !!
   block
-    
+
     integer :: i, it
     character(256) :: fn
     integer, parameter :: io = 100
     !! --
-    
+
     do i=1, nst
        write(fn,'(A,I3.3,A)') trim(adjustl(title))//'_', i, '.wav'
        open(io, file=fn, action='write', status='unknown' )
@@ -532,7 +532,7 @@ program llw
        end do
        close(io)
     end do
-    
+
   end block
 
   !! ----------------------------------------------------------------------- !!
@@ -554,6 +554,6 @@ program llw
     deallocate( eta_x )
 
   end block
-  
+
 end program llw
 !! ------------------------------------------------------------------------- !!
