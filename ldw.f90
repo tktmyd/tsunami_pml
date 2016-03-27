@@ -1,6 +1,6 @@
 !! ------------------------------------------------------------------------- !!
 !>
-!! An example code of an implementation of the absorbing boundary condition 
+!! An example code of an implementation of the absorbing boundary condition
 !! for tsunami wave propagation: Liner Dispersive Wave (LDW) case
 !!
 !! @license
@@ -12,20 +12,20 @@
 !!
 !!   Maeda, T., H. Tsushima, and T. Furumura,
 !!   An effective absorbing boundary condition for linear long-wave and
-!!   linear dispersive wave tsunami simulations, 
-!!   in preparation, 2015. 
+!!   linear dispersive wave tsunami simulations,
+!!   in press, 2016. 
 !!
 !<
 !! ------------------------------------------------------------------------- !!
 program ldw
- 
+
   implicit none
 
   !! fixed parameters
   integer, parameter :: STDERR  = 0            !< Standard Error
   integer, parameter :: STDOUT  = 6            !< Standard Output
   real,    parameter :: PI      = atan(1.0)*4
-  real,    parameter :: g0      = 9.80665      !< gravity 
+  real,    parameter :: g0      = 9.80665      !< gravity
   integer, parameter :: na=20                  !< absorber thickness
 
   !! control parameters
@@ -70,7 +70,7 @@ program ldw
 
   !! parameter input
   include "blk_param.f90"
-  
+
   !! ----------------------------------------------------------------------- !!
   !>
   !! memory allocation
@@ -99,7 +99,7 @@ program ldw
     allocate( g1x(2,nx), g2x(2,nx), g1y(2,ny), g2y(2,ny) )
     allocate( eta_x(nx,ny) )
 
-    
+
     eta(:,:) = 0.0
     mm (:,:) = 0.0
     nn (:,:) = 0.0
@@ -116,13 +116,13 @@ program ldw
 
   end block
 
-  
+
   include 'blk_initheight.f90'
-  
+
   include 'blk_bathymetry.f90'
-  
+
   include 'blk_station.f90'
-  
+
   !! ----------------------------------------------------------------------- !!
   !>
   !! PML absorber settings
@@ -134,7 +134,7 @@ program ldw
     integer :: i, j
     real :: d0, b0, R0
     real :: xxb, xxc
-    real :: hx    
+    real :: hx
     integer, parameter :: pd = 2
     integer, parameter :: pb = 2
     real,    parameter :: c0 = 500.0 !! assumed phase speed
@@ -146,10 +146,10 @@ program ldw
     R0 = 10**( - ( log10( real(na) ) - 1 ) / log10( 2.0 )  - 3.0 )
     d0 = - ( 1.0 / (2.0*hx) ) * ( pd +1 ) * c0 * log( R0 )
     b0 = 2.0
-    
-    !! initialize eta: assume initial amplitude wihtin PML layer is zero 
+
+    !! initialize eta: assume initial amplitude wihtin PML layer is zero
     eta_x(1:nx,1:ny) = 0.0
-    
+
     !! initialize
     do i=1, 2
        do j=1, nx
@@ -161,11 +161,11 @@ program ldw
           g2y(i,j) = 1.0
        end do
     end do
-    
+
     !! set absorber
     do i=1, na
-       
-       
+
+
        !! distance from PML boundary
        xxb = max(hx  - (i    ) * dx,0.)
        xxc = max(hx  - (i+0.5) * dx,0.)
@@ -175,7 +175,7 @@ program ldw
 
        d2 = d0 * ( xxc / hx )**pd
        b2 = 1.0 + ( b0 - 1.0 ) * ( xxc / hx )**pb
-       
+
        g1x(1,i) = (b1 - d1/2.0*dt) / (b1 + d1/2*dt)
        g1x(2,i) = (b1 - d2/2.0*dt) / (b1 + d2/2*dt)
        g2x(1,i) =  1.0             / (b1 + d1/2*dt)
@@ -183,22 +183,22 @@ program ldw
 
        g1y(:,i) = g1x(:,i)
        g2y(:,i) = g2x(:,i)
-       
+
        ! Opposite Side; Exchange Staggered Grid
        g1x(1,nx-i+1) = g1x(2,i)
        g1x(2,nx-i+1) = g1x(1,i)
        g2x(1,nx-i+1) = g2x(2,i)
        g2x(2,nx-i+1) = g2x(1,i)
-       
+
        g1y(1,ny-i+1) = g1x(2,i)
        g1y(2,ny-i+1) = g1x(1,i)
        g2y(1,ny-i+1) = g2x(2,i)
        g2y(2,ny-i+1) = g2x(1,i)
-       
+
     end do
 
   end block
-  
+
 
   !! ----------------------------------------------------------------------- !!
   !>
@@ -220,7 +220,7 @@ program ldw
     end do
 
   end block
-  
+
 
   !! ----------------------------------------------------------------------- !!
   !>
@@ -250,7 +250,7 @@ program ldw
 
 
   end block
-  
+
 
   !! ----------------------------------------------------------------------- !!
   !>
@@ -271,9 +271,9 @@ program ldw
           if( hh(i,j) < 0.0 ) fh(i,j) = 0.0
        end do
     end do
-    
+
   end block
-  
+
 
   !! ----------------------------------------------------------------------- !!
   !>
@@ -297,17 +297,17 @@ program ldw
   block
     real :: xdiv, ydiv
     integer :: i, j
-    
+
     do j=1, ny
        do i=1, nx
-          xdiv = 3*dx*dx / (3*dx*dx + 2*hm(i,j)*hm(i,j) ) 
-          ydiv = 3*dy*dy / (3*dy*dy + 2*hn(i,j)*hn(i,j) ) 
+          xdiv = 3*dx*dx / (3*dx*dx + 2*hm(i,j)*hm(i,j) )
+          ydiv = 3*dy*dy / (3*dy*dy + 2*hn(i,j)*hn(i,j) )
           c1x(i,j) = - xdiv  * g0 * hm(i,j)
-          c2x(i,j) = xdiv * hm(i,j)*hm(i,j) / ( 3 * dx*dx ) 
-          c3x(i,j) = xdiv * hm(i,j)*hm(i,j) / ( 3 * dx*dy ) 
+          c2x(i,j) = xdiv * hm(i,j)*hm(i,j) / ( 3 * dx*dx )
+          c3x(i,j) = xdiv * hm(i,j)*hm(i,j) / ( 3 * dx*dy )
           c1y(i,j) = - ydiv  * g0 * hn(i,j)
-          c2y(i,j) = ydiv * hn(i,j)*hn(i,j) / ( 3 * dy*dy ) 
-          c3y(i,j) = ydiv * hn(i,j)*hn(i,j) / ( 3 * dx*dy ) 
+          c2y(i,j) = ydiv * hn(i,j)*hn(i,j) / ( 3 * dy*dy )
+          c3y(i,j) = ydiv * hn(i,j)*hn(i,j) / ( 3 * dx*dy )
        end do
     end do
 
@@ -316,26 +316,26 @@ program ldw
     yw(:) = 1.0
     do i=1, na
        xw(i) = sin( PI * i / na / 2 )
-       
+
        xw(nx-i+1) = xw(i)
        yw(i)      = xw(i)
        yw(ny-i+1) = yw(i)
     end do
-    
+
   end block
-  
-  
+
+
   !! ----------------------------------------------------------------------- !!
   !>
   !! time stepping
   !<
   block
-    
+
     integer :: it
     real :: dxeta(nx,ny), dyeta(nx,ny)
     real :: dxm(nx,ny), dyn(nx,ny)
     !! --
-    
+
     do it= 1, nt
 
        if( mod(it,100) == 0 ) then
@@ -349,30 +349,30 @@ program ldw
        !<
        !! --
        block
-         
+
          integer :: i, j
          !! --
-         
+
          do j=1, ny
             do i=2, nx
                dxeta(i,j) = ( eta(i,j) - eta(i-1,j) ) * dxi
             end do
             dxeta(1,j) = ( eta(1,j) -        0.0 ) * dxi
          end do
-         
+
          do i=1, nx
             do j=2, ny
                dyeta(i,j) = ( eta(i,j) - eta(i,j-1) ) * dyi
             end do
             dyeta(i,1) = ( eta(i,1) -        0.0 ) * dyi
          end do
-         
+
        end block
-       
+
 
        !! ------------------------------------------------------------------ !!
        block
-         
+
          integer, parameter :: ITER_MAX = 1000
          real,    parameter :: TOR = 1e-5
          integer :: k
@@ -382,32 +382,32 @@ program ldw
          integer :: icol, jcol
          real :: tmp
          !! --
-         
+
 
          !! initial values of time-derivative of vel are
          !! approximated by long-wave theory
          if( it == 1 ) then
             do j=1, ny
                do i=1, nx
-                  
+
                   dtm(i,j) = - g0*hm(i,j)*dxeta(i,j)*dt*fm(i,j)
                   dtn(i,j) = - g0*hn(i,j)*dyeta(i,j)*dt*fn(i,j)
-                  
+
                end do
             end do
          end if
-         
-         
+
+
          !! maximum value for conversion check
          amax =max( maxval( abs(dtm(2:nx-1,2:ny-1)) ), &
                     maxval( abs(dtn(2:nx-1,2:ny-1)) ) )
          if( amax < epsilon(1.0 ) ) amax = 1.0
-         
-         
-         
+
+
+
          !! iteration for time-derivative of vel
          do k=1, ITER_MAX
-            
+
             !! copy previous vel velocities
             do j=1, ny
                do i=1, nx
@@ -426,7 +426,7 @@ program ldw
                   err = max( err,  abs( dtm(i,j) - dtm0(i,j) ) / amax )
                end do
             end do
-            
+
             do j=2, ny-1
                do i=2, nx-1
                   dtn(i,j) = c1y(i,j) *  dyeta(i,j) &
@@ -435,11 +435,11 @@ program ldw
                   err = max( err,  abs( dtn(i,j) - dtn0(i,j) ) / amax )
                end do
             end do
-            
+
             if( err < TOR ) exit
-            
+
          end do
-         
+
          !! update tsunami velocity using dispersive terms
          do j=2, ny-1
             do i=2, nx-1
@@ -451,9 +451,9 @@ program ldw
                                  + yw(j)   * dtn(i,j) ) * dt * fn(i,j)
             end do
          end do
-         
+
        end block
-       
+
 
 
        !! ------------------------------------------------------------------ !!
@@ -462,85 +462,85 @@ program ldw
        !<
        !! --
        block
-         
+
          integer :: i, j
          !! --
-         
+
          do j=1, ny
             dxm(nx,j) = ( 0.0 - mm(nx,j)  ) * dxi
             do i=1, nx-1
                dxm(i,j) = ( mm(i+1,j) - mm(i,j) ) * dxi
             end do
          end do
-         
+
          do i=1, nx
             dyn(i,ny) = ( 0.0 - nn(i,ny) ) * dyi
             do j=1, ny-1
                dyn(i,j) = ( nn(i,j+1) - nn(i,j) ) * dyi
             end do
          end do
-         
+
        end block
 
-       
+
 
        !! ------------------------------------------------------------------ !!
        block
-         
+
          integer i, j
          real :: dtxi, dtyi
          !! --
-         
+
          dtxi = dt * dxi
          dtyi = dt * dyi
-         
+
          do j=na+1, ny-na
             do i=na+1, nx-na
                eta(i,j) =  eta(i,j) - ( dxm(i,j) +  dyn(i,j) )*dt * fh(i,j)
             end do
          end do
-         
+
        end block
 
-       
-       
+
+
        !! ------------------------------------------------------------------ !!
        block
-         
+
          integer :: i, j
          real :: eta_y
          !! --
-         
+
          do j=1, na
             do i=1, nx
                eta_y = eta(i,j) - eta_x(i,j)
-               
+
                eta_x(i,j) = g1x(2,i) * eta_x(i,j) - g2x(2,i) * dxm(i,j) * dt
                eta_y      = g1y(2,j) * eta_y      - g2y(2,j) * dyn(i,j) * dt
-               
+
                eta(i,j) = ( eta_x(i,j) + eta_y ) * fh(i,j)
-               
+
             end do
          end do
-         
+
          do j=ny-na+1,ny
             do i=1, nx
                eta_y = eta(i,j) - eta_x(i,j)
-               
+
                eta_x(i,j) = g1x(2,i) * eta_x(i,j) - g2x(2,i) * dxm(i,j) * dt
                eta_y      = g1y(2,j) * eta_y      - g2y(2,j) * dyn(i,j) * dt
-               
+
                eta(i,j) = ( eta_x(i,j) + eta_y ) * fh(i,j)
             end do
          end do
-         
+
          do j=na+1, ny-na
             do i=1, na
                eta_y = eta(i,j) - eta_x(i,j)
-               
+
                eta_x(i,j) = g1x(2,i) * eta_x(i,j) - g2x(2,i) * dxm(i,j) * dt
                eta_y      = g1y(2,j) * eta_y      - g2y(2,j) * dyn(i,j) * dt
-               
+
                eta(i,j) = ( eta_x(i,j) + eta_y ) * fh(i,j)
             end do
          end do
@@ -548,42 +548,42 @@ program ldw
          do j=na+1, ny-na
             do i=nx-na+1,nx
                eta_y = eta(i,j) - eta_x(i,j)
-               
+
                eta_x(i,j) = g1x(2,i) * eta_x(i,j) - g2x(2,i) * dxm(i,j) * dt
                eta_y      = g1y(2,j) * eta_y      - g2y(2,j) * dyn(i,j) * dt
-               
+
                eta(i,j) = ( eta_x(i,j) + eta_y ) * fh(i,j)
             end do
          end do
-         
+
        end block
-       
-       
+
+
        !! ------------------------------------------------------------------ !!
        block
-         
+
          integer :: i
-         
+
          do i=1, nst
             wav(i,it) = eta( ist(i), jst(i) )
          end do
-         
+
        end block
 
-       
+
 
     end do
-    
+
   end block
 
   !! ----------------------------------------------------------------------- !!
   block
-    
+
     integer :: i, it
     character(256) :: fn
     integer, parameter :: io = 100
     !! --
-    
+
     do i=1, nst
        write(fn,'(A,I3.3,A)') trim(adjustl(title))//'_', i, '.wav'
        open(io, file=fn, action='write', status='unknown' )
@@ -592,7 +592,7 @@ program ldw
        end do
        close(io)
     end do
-    
+
   end block
 
   !! ----------------------------------------------------------------------- !!
@@ -615,6 +615,6 @@ program ldw
     deallocate( c1x, c2x, c3x )
     deallocate( c1y, c2y, c3y )
   end block
-  
+
 end program ldw
 !! ------------------------------------------------------------------------- !!
