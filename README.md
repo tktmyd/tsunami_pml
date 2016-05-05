@@ -17,7 +17,7 @@ Maeda, T., H. Tsushima, and T. Furumura,
 An effective absorbing boundary condition for linear long-wave and linear
 dispersive wave tsunami simulations,
 Earth, Planets, and Space,
-in press, 2016.
+68, 63, doi:10.1186/s40623-016-0436-y, 2016.
 
 The authors request that the user to cite the above accompanying paper in any
 publications that result from the use of this software, although this is
